@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
+from tkinter import ttk, messagebox, scrolledtext, font
 import threading
 from email_service import EmailVerificationService
 import os
@@ -9,9 +9,25 @@ from datetime import datetime
 class EmailVerificationGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Email Verification Service")
-        self.root.geometry("800x600")
-        self.root.configure(bg='#f0f0f0')
+        self.root.title("📧 Email Verification Service")
+        self.root.geometry("900x700")
+        
+        # Modern color scheme
+        self.colors = {
+            'primary': '#2E86C1',      # Modern blue
+            'secondary': '#F39C12',     # Orange accent
+            'success': '#27AE60',       # Green
+            'danger': '#E74C3C',        # Red
+            'warning': '#F1C40F',       # Yellow
+            'light': '#ECF0F1',         # Light gray
+            'dark': '#2C3E50',          # Dark blue-gray
+            'white': '#FFFFFF',
+            'gradient_start': '#667eea',
+            'gradient_end': '#764ba2'
+        }
+        
+        # Configure modern styling
+        self.setup_modern_style()
         
         # Settings file for persistent storage
         self.settings_file = "app_settings.json"
@@ -22,128 +38,475 @@ class EmailVerificationGUI:
         # Load saved settings
         self.load_settings()
         
-        # Create main container
-        main_frame = ttk.Frame(root, padding="20")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        # Initialize variables
+        self.initialize_variables()
         
-        # Configure grid weights
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-        
-        # Title
-        title_label = ttk.Label(main_frame, text="Email Verification Service", 
-                               font=('Arial', 16, 'bold'))
-        title_label.grid(row=0, column=0, columnspan=2, pady=(0, 20))
-        
-        # Configuration Section
-        config_frame = ttk.LabelFrame(main_frame, text="Email Configuration", padding="10")
-        config_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        config_frame.columnconfigure(1, weight=1)
-        
-        # Sender Email
-        ttk.Label(config_frame, text="Sender Email:").grid(row=0, column=0, sticky=tk.W, pady=2)
+        # Create modern UI
+        self.create_modern_ui()
+    
+    def initialize_variables(self):
+        """Initialize all tkinter variables"""
         self.sender_email_var = tk.StringVar(value=self.email_service.sender_email or "")
-        self.sender_email_entry = ttk.Entry(config_frame, textvariable=self.sender_email_var, width=40)
-        self.sender_email_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=2)
-        
-        # Sender Password
-        ttk.Label(config_frame, text="App Password:").grid(row=1, column=0, sticky=tk.W, pady=2)
         self.sender_password_var = tk.StringVar(value=self.email_service.sender_password or "")
-        self.sender_password_entry = ttk.Entry(config_frame, textvariable=self.sender_password_var, 
-                                             show="*", width=40)
-        self.sender_password_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=2)
-        
-        # Update config button
-        ttk.Button(config_frame, text="Update Configuration", 
-                  command=self.update_config).grid(row=2, column=1, sticky=tk.E, pady=(10, 0))
-        
-        # Send Email Section
-        send_frame = ttk.LabelFrame(main_frame, text="Send Verification Email", padding="10")
-        send_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        send_frame.columnconfigure(1, weight=1)
-        
-        # Recipient Email
-        ttk.Label(send_frame, text="Recipient Email:").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.recipient_email_var = tk.StringVar()
+        self.verify_email_var = tk.StringVar()
+        self.verify_code_var = tk.StringVar()
         
-        # Create combobox for recipient email with history
-        self.recipient_email_combo = ttk.Combobox(send_frame, textvariable=self.recipient_email_var, width=37)
-        self.recipient_email_combo.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=2)
+        # Create modern UI
+        self.create_modern_ui()
+    
+    def setup_modern_style(self):
+        """Setup modern styling for the application"""
+        style = ttk.Style()
+        
+        # Configure modern theme
+        style.theme_use('clam')
+        
+        # Custom styles for modern look
+        style.configure('Title.TLabel', 
+                       font=('Segoe UI', 24, 'bold'),
+                       foreground=self.colors['dark'],
+                       background=self.colors['white'])
+        
+        style.configure('Subtitle.TLabel',
+                       font=('Segoe UI', 12),
+                       foreground=self.colors['primary'],
+                       background=self.colors['white'])
+        
+        style.configure('Modern.TFrame',
+                       background=self.colors['white'],
+                       relief='flat',
+                       borderwidth=0)
+        
+        style.configure('Card.TFrame',
+                       background=self.colors['white'],
+                       relief='solid',
+                       borderwidth=1)
+        
+        style.configure('Primary.TButton',
+                       font=('Segoe UI', 10, 'bold'),
+                       foreground=self.colors['white'],
+                       background=self.colors['primary'],
+                       borderwidth=0,
+                       focuscolor='none')
+        
+        style.map('Primary.TButton',
+                 background=[('active', '#2471A3'),
+                           ('pressed', '#1B4F72')])
+        
+        style.configure('Success.TButton',
+                       font=('Segoe UI', 10, 'bold'),
+                       foreground=self.colors['white'],
+                       background=self.colors['success'],
+                       borderwidth=0,
+                       focuscolor='none')
+        
+        style.configure('Warning.TButton',
+                       font=('Segoe UI', 9),
+                       foreground=self.colors['dark'],
+                       background=self.colors['warning'],
+                       borderwidth=0,
+                       focuscolor='none')
+        
+        style.configure('Modern.TEntry',
+                       font=('Segoe UI', 10),
+                       borderwidth=2,
+                       relief='solid',
+                       focuscolor=self.colors['primary'])
+        
+        style.configure('Modern.TCombobox',
+                       font=('Segoe UI', 10),
+                       borderwidth=2,
+                       relief='solid')
+        
+        style.configure('Modern.TLabelFrame',
+                       font=('Segoe UI', 11, 'bold'),
+                       foreground=self.colors['dark'],
+                       background=self.colors['white'],
+                       borderwidth=2,
+                       relief='solid')
+        
+        style.configure('Modern.TLabelFrame.Label',
+                       font=('Segoe UI', 11, 'bold'),
+                       foreground=self.colors['primary'],
+                       background=self.colors['white'])
+    
+    def create_modern_ui(self):
+        """Create the modern UI layout"""
+        # Set window background
+        self.root.configure(bg=self.colors['light'])
+        
+        # Create main container with padding
+        self.main_container = tk.Frame(self.root, bg=self.colors['light'])
+        self.main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Create header section
+        self.create_header()
+        
+        # Create content area with cards
+        self.create_content_area()
+        
+        # Create footer
+        self.create_footer()
+        
+        # Apply final touches
+        self.apply_modern_touches()
+    
+    def create_header(self):
+        """Create modern header section"""
+        header_frame = tk.Frame(self.main_container, bg=self.colors['white'], relief='solid', bd=1)
+        header_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        # Add gradient-like effect with multiple frames
+        gradient_frame = tk.Frame(header_frame, height=5, bg=self.colors['primary'])
+        gradient_frame.pack(fill=tk.X)
+        
+        content_frame = tk.Frame(header_frame, bg=self.colors['white'])
+        content_frame.pack(fill=tk.X, padx=30, pady=20)
+        
+        # App title with emoji
+        title_label = tk.Label(content_frame, 
+                              text="📧 Email Verification Service",
+                              font=('Segoe UI', 28, 'bold'),
+                              fg=self.colors['dark'],
+                              bg=self.colors['white'])
+        title_label.pack()
+        
+        # Subtitle
+        subtitle_label = tk.Label(content_frame,
+                                 text="Send beautiful verification emails with 6-digit codes",
+                                 font=('Segoe UI', 12),
+                                 fg=self.colors['primary'],
+                                 bg=self.colors['white'])
+        subtitle_label.pack(pady=(5, 0))
+    
+    def create_content_area(self):
+        """Create content area with modern cards"""
+        content_frame = tk.Frame(self.main_container, bg=self.colors['light'])
+        content_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Left column
+        left_column = tk.Frame(content_frame, bg=self.colors['light'])
+        left_column.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        
+        # Right column  
+        right_column = tk.Frame(content_frame, bg=self.colors['light'])
+        right_column.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(10, 0))
+        
+        # Create cards
+        self.create_config_card(left_column)
+        self.create_send_card(left_column)
+        self.create_verify_card(right_column)
+        self.create_log_card(right_column)
+    
+    def create_config_card(self, parent):
+        """Create email configuration card"""
+        card = self.create_card(parent, "⚙️ Email Configuration", self.colors['primary'])
+        
+        # Email input
+        self.create_modern_input(card, "📧 Sender Email:", self.sender_email_var, 
+                               "Enter your Gmail address")
+        
+        # Password input
+        self.create_modern_input(card, "🔑 App Password:", self.sender_password_var, 
+                               "Enter Gmail App Password", show="*")
+        
+        # Update button
+        btn_frame = tk.Frame(card, bg=self.colors['white'])
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
+        
+        update_btn = tk.Button(btn_frame, text="💾 Update Configuration",
+                              command=self.update_config,
+                              bg=self.colors['success'],
+                              fg=self.colors['white'],
+                              font=('Segoe UI', 10, 'bold'),
+                              relief='flat',
+                              padx=20, pady=8,
+                              cursor='hand2')
+        update_btn.pack(side=tk.RIGHT)
+        
+        # Hover effects
+        self.add_hover_effect(update_btn, self.colors['success'], '#229954')
+    
+    def create_send_card(self, parent):
+        """Create send email card"""
+        card = self.create_card(parent, "📤 Send Verification Email", self.colors['secondary'])
+        
+        # Recipient email with history
+        recipient_frame = tk.Frame(card, bg=self.colors['white'])
+        recipient_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        tk.Label(recipient_frame, text="📧 Recipient Email:",
+                font=('Segoe UI', 10, 'bold'),
+                fg=self.colors['dark'],
+                bg=self.colors['white']).pack(anchor='w')
+        
+        self.recipient_email_combo = ttk.Combobox(recipient_frame, 
+                                                 textvariable=self.recipient_email_var,
+                                                 style='Modern.TCombobox',
+                                                 font=('Segoe UI', 11))
+        self.recipient_email_combo.pack(fill=tk.X, pady=(5, 0))
         
         # Load recent recipients
         self.load_recent_recipients()
         
-        # Custom Message
-        ttk.Label(send_frame, text="Custom Message:").grid(row=1, column=0, sticky=(tk.W, tk.N), pady=2)
-        self.custom_message_text = scrolledtext.ScrolledText(send_frame, height=3, width=40)
-        self.custom_message_text.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=2)
+        # Custom message
+        msg_frame = tk.Frame(card, bg=self.colors['white'])
+        msg_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
         
-        # Load last custom message if available
+        tk.Label(msg_frame, text="💬 Custom Message:",
+                font=('Segoe UI', 10, 'bold'),
+                fg=self.colors['dark'],
+                bg=self.colors['white']).pack(anchor='w')
+        
+        # Custom message text area with modern styling
+        text_frame = tk.Frame(msg_frame, bg=self.colors['white'], relief='solid', bd=2)
+        text_frame.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
+        
+        self.custom_message_text = tk.Text(text_frame, height=3,
+                                          font=('Segoe UI', 10),
+                                          bg=self.colors['white'],
+                                          fg=self.colors['dark'],
+                                          relief='flat',
+                                          wrap=tk.WORD,
+                                          padx=10, pady=8)
+        self.custom_message_text.pack(fill=tk.BOTH, expand=True)
+        
+        # Load last custom message
         if hasattr(self, 'last_custom_message') and self.last_custom_message:
             self.custom_message_text.insert(1.0, self.last_custom_message)
         
-        # Send button and clear recipients button
-        button_frame = ttk.Frame(send_frame)
-        button_frame.grid(row=3, column=1, sticky=tk.E, pady=(10, 0))
+        # Buttons
+        btn_frame = tk.Frame(card, bg=self.colors['white'])
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
         
-        self.send_button = ttk.Button(button_frame, text="Send Verification Email", 
-                                     command=self.send_email_threaded)
-        self.send_button.pack(side=tk.RIGHT, padx=(5, 0))
+        # Clear recent button
+        clear_btn = tk.Button(btn_frame, text="🗑️ Clear Recent",
+                             command=self.clear_recent_recipients,
+                             bg=self.colors['light'],
+                             fg=self.colors['dark'],
+                             font=('Segoe UI', 9),
+                             relief='flat',
+                             padx=15, pady=6,
+                             cursor='hand2')
+        clear_btn.pack(side=tk.LEFT)
         
-        ttk.Button(button_frame, text="Clear Recent", 
-                  command=self.clear_recent_recipients).pack(side=tk.RIGHT)
+        # Send button
+        self.send_button = tk.Button(btn_frame, text="🚀 Send Verification Email",
+                                    command=self.send_email_threaded,
+                                    bg=self.colors['primary'],
+                                    fg=self.colors['white'],
+                                    font=('Segoe UI', 11, 'bold'),
+                                    relief='flat',
+                                    padx=25, pady=10,
+                                    cursor='hand2')
+        self.send_button.pack(side=tk.RIGHT)
         
-        # Verify Code Section
-        verify_frame = ttk.LabelFrame(main_frame, text="Verify Code", padding="10")
-        verify_frame.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
-        verify_frame.columnconfigure(1, weight=1)
+        # Hover effects
+        self.add_hover_effect(clear_btn, self.colors['light'], '#D5DBDB')
+        self.add_hover_effect(self.send_button, self.colors['primary'], '#2471A3')
+    
+    def create_verify_card(self, parent):
+        """Create verification card"""
+        card = self.create_card(parent, "🔍 Verify Code", self.colors['success'])
         
-        # Email for verification
-        ttk.Label(verify_frame, text="Email:").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.verify_email_var = tk.StringVar()
-        self.verify_email_entry = ttk.Entry(verify_frame, textvariable=self.verify_email_var, width=40)
-        self.verify_email_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(10, 0), pady=2)
+        # Email input
+        self.create_modern_input(card, "📧 Email:", self.verify_email_var, 
+                               "Enter email to verify")
         
-        # Verification code
-        ttk.Label(verify_frame, text="Verification Code:").grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.verify_code_var = tk.StringVar()
-        self.verify_code_entry = ttk.Entry(verify_frame, textvariable=self.verify_code_var, width=20)
-        self.verify_code_entry.grid(row=1, column=1, sticky=tk.W, padx=(10, 0), pady=2)
+        # Code input
+        self.create_modern_input(card, "🔢 Verification Code:", self.verify_code_var, 
+                               "Enter 6-digit code")
         
         # Verify button
-        ttk.Button(verify_frame, text="Verify Code", 
-                  command=self.verify_code).grid(row=2, column=1, sticky=tk.E, pady=(10, 0))
+        btn_frame = tk.Frame(card, bg=self.colors['white'])
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
         
-        # Log Section
-        log_frame = ttk.LabelFrame(main_frame, text="Activity Log", padding="10")
-        log_frame.grid(row=4, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
-        log_frame.columnconfigure(0, weight=1)
-        log_frame.rowconfigure(0, weight=1)
-        main_frame.rowconfigure(4, weight=1)
+        verify_btn = tk.Button(btn_frame, text="✅ Verify Code",
+                              command=self.verify_code,
+                              bg=self.colors['success'],
+                              fg=self.colors['white'],
+                              font=('Segoe UI', 11, 'bold'),
+                              relief='flat',
+                              padx=25, pady=10,
+                              cursor='hand2')
+        verify_btn.pack(side=tk.RIGHT)
         
-        # Log text area
-        self.log_text = scrolledtext.ScrolledText(log_frame, height=10, width=80)
-        self.log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.add_hover_effect(verify_btn, self.colors['success'], '#229954')
+    
+    def create_log_card(self, parent):
+        """Create activity log card"""
+        card = self.create_card(parent, "📋 Activity Log", self.colors['dark'])
+        
+        # Log text area with modern styling
+        log_frame = tk.Frame(card, bg=self.colors['white'], relief='solid', bd=2)
+        log_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        self.log_text = tk.Text(log_frame, height=12,
+                               font=('Consolas', 9),
+                               bg='#2C3E50',
+                               fg='#ECF0F1',
+                               relief='flat',
+                               wrap=tk.WORD,
+                               padx=15, pady=10)
+        
+        # Scrollbar
+        scrollbar = tk.Scrollbar(log_frame, command=self.log_text.yview,
+                                bg=self.colors['dark'],
+                                troughcolor=self.colors['light'])
+        self.log_text.config(yscrollcommand=scrollbar.set)
+        
+        self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         # Clear log button
-        ttk.Button(log_frame, text="Clear Log", 
-                  command=self.clear_log).grid(row=1, column=0, sticky=tk.E, pady=(10, 0))
+        clear_log_btn = tk.Button(card, text="🧹 Clear Log",
+                                 command=self.clear_log,
+                                 bg=self.colors['warning'],
+                                 fg=self.colors['dark'],
+                                 font=('Segoe UI', 9),
+                                 relief='flat',
+                                 padx=15, pady=6,
+                                 cursor='hand2')
+        clear_log_btn.pack(side=tk.RIGHT)
+        
+        self.add_hover_effect(clear_log_btn, self.colors['warning'], '#F4D03F')
+    
+    def create_footer(self):
+        """Create modern footer with status"""
+        footer_frame = tk.Frame(self.main_container, bg=self.colors['white'], relief='solid', bd=1)
+        footer_frame.pack(fill=tk.X, pady=(20, 0))
         
         # Status bar
-        self.status_var = tk.StringVar(value="Ready")
-        status_bar = ttk.Label(main_frame, textvariable=self.status_var, relief=tk.SUNKEN)
-        status_bar.grid(row=5, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
+        status_frame = tk.Frame(footer_frame, bg=self.colors['white'])
+        status_frame.pack(fill=tk.X, padx=20, pady=10)
         
-        # Bind Enter key events
+        # Status indicator
+        self.status_indicator = tk.Label(status_frame, text="🟢", 
+                                        font=('Segoe UI', 12),
+                                        bg=self.colors['white'])
+        self.status_indicator.pack(side=tk.LEFT)
+        
+        # Status text
+        self.status_var = tk.StringVar(value="Ready to send emails")
+        status_label = tk.Label(status_frame, textvariable=self.status_var,
+                               font=('Segoe UI', 10),
+                               fg=self.colors['dark'],
+                               bg=self.colors['white'])
+        status_label.pack(side=tk.LEFT, padx=(10, 0))
+        
+        # App info
+        info_label = tk.Label(status_frame, text="📧 Email Verification Service v2.0",
+                             font=('Segoe UI', 9),
+                             fg=self.colors['primary'],
+                             bg=self.colors['white'])
+        info_label.pack(side=tk.RIGHT)
+    
+    def create_card(self, parent, title, accent_color):
+        """Create a modern card with shadow effect"""
+        # Card container with shadow effect
+        card_container = tk.Frame(parent, bg=self.colors['light'])
+        card_container.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        
+        # Shadow frame
+        shadow_frame = tk.Frame(card_container, bg='#BDC3C7', height=5)
+        shadow_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        # Main card
+        card = tk.Frame(card_container, bg=self.colors['white'], relief='solid', bd=1)
+        card.pack(fill=tk.BOTH, expand=True)
+        
+        # Card header with accent color
+        header_frame = tk.Frame(card, bg=accent_color, height=8)
+        header_frame.pack(fill=tk.X)
+        
+        # Title
+        title_frame = tk.Frame(card, bg=self.colors['white'])
+        title_frame.pack(fill=tk.X, padx=20, pady=(15, 15))
+        
+        title_label = tk.Label(title_frame, text=title,
+                              font=('Segoe UI', 14, 'bold'),
+                              fg=self.colors['dark'],
+                              bg=self.colors['white'])
+        title_label.pack(anchor='w')
+        
+        # Content area
+        content_frame = tk.Frame(card, bg=self.colors['white'])
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
+        
+        return content_frame
+    
+    def create_modern_input(self, parent, label_text, var, placeholder="", show=None):
+        """Create a modern input field"""
+        input_frame = tk.Frame(parent, bg=self.colors['white'])
+        input_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Label
+        label = tk.Label(input_frame, text=label_text,
+                        font=('Segoe UI', 10, 'bold'),
+                        fg=self.colors['dark'],
+                        bg=self.colors['white'])
+        label.pack(anchor='w')
+        
+        # Input field with modern styling
+        entry_frame = tk.Frame(input_frame, bg=self.colors['white'], relief='solid', bd=2)
+        entry_frame.pack(fill=tk.X, pady=(5, 0))
+        
+        entry = tk.Entry(entry_frame, textvariable=var,
+                        font=('Segoe UI', 11),
+                        bg=self.colors['white'],
+                        fg=self.colors['dark'],
+                        relief='flat',
+                        show=show,
+                        insertbackground=self.colors['primary'])
+        entry.pack(fill=tk.X, padx=10, pady=8)
+        
+        # Placeholder effect
+        if placeholder:
+            self.add_placeholder_effect(entry, placeholder)
+        
+        return entry
+    
+    def add_placeholder_effect(self, entry, placeholder_text):
+        """Add placeholder effect to entry"""
+        def on_focus_in(event):
+            if entry.get() == placeholder_text:
+                entry.delete(0, tk.END)
+                entry.config(fg=self.colors['dark'])
+        
+        def on_focus_out(event):
+            if not entry.get():
+                entry.insert(0, placeholder_text)
+                entry.config(fg='#95A5A6')
+        
+        entry.insert(0, placeholder_text)
+        entry.config(fg='#95A5A6')
+        entry.bind('<FocusIn>', on_focus_in)
+        entry.bind('<FocusOut>', on_focus_out)
+    
+    def add_hover_effect(self, widget, normal_color, hover_color):
+        """Add hover effect to buttons"""
+        def on_enter(event):
+            widget.config(bg=hover_color)
+        
+        def on_leave(event):
+            widget.config(bg=normal_color)
+        
+        widget.bind('<Enter>', on_enter)
+        widget.bind('<Leave>', on_leave)
+    
+    def apply_modern_touches(self):
+        """Apply final modern touches"""
+        # Bind events
         self.recipient_email_combo.bind('<Return>', lambda e: self.send_email_threaded())
-        self.verify_code_entry.bind('<Return>', lambda e: self.verify_code())
-        
-        # Bind window close event to save settings
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
-        # Log startup messages now that log_text is available
-        self.log_message("Email Verification Service started")
+        # Log startup messages
+        self.log_startup_messages()
+    
+    def log_startup_messages(self):
+        """Log startup messages now that log_text is available"""
+        self.log_message("🚀 Email Verification Service started")
         
         if self.settings_loaded:
             self.log_message("✅ Settings loaded successfully")
@@ -155,8 +518,9 @@ class EmailVerificationGUI:
             else:
                 self.log_message("📝 Using default settings (first run)")
         
-        self.log_message("Ready to send verification emails!")
-    
+        self.log_message("🎨 Modern UI loaded successfully")
+        self.log_message("Ready to send beautiful verification emails!")
+
     def load_settings(self):
         """Load saved settings from file"""
         try:
@@ -249,16 +613,55 @@ class EmailVerificationGUI:
         self.root.destroy()
 
     def log_message(self, message):
-        """Add message to log with timestamp"""
+        """Add message to log with timestamp and color coding"""
         from datetime import datetime
         timestamp = datetime.now().strftime("%H:%M:%S")
-        self.log_text.insert(tk.END, f"[{timestamp}] {message}\n")
+        
+        # Color code messages based on content
+        if "✅" in message or "Success" in message:
+            color = "#27AE60"  # Green
+        elif "❌" in message or "Failed" in message or "Error" in message:
+            color = "#E74C3C"  # Red
+        elif "⚠️" in message or "Warning" in message:
+            color = "#F39C12"  # Orange
+        elif "📧" in message or "Email" in message:
+            color = "#3498DB"  # Blue
+        elif "🔢" in message or "Code" in message:
+            color = "#9B59B6"  # Purple
+        elif "💾" in message or "Saved" in message:
+            color = "#16A085"  # Teal
+        else:
+            color = "#ECF0F1"  # Light gray
+        
+        # Configure text tags for colors
+        self.log_text.tag_configure("colored", foreground=color)
+        
+        # Insert colored message
+        self.log_text.insert(tk.END, f"[{timestamp}] ", "timestamp")
+        self.log_text.insert(tk.END, f"{message}\n", "colored")
         self.log_text.see(tk.END)
+        
+        # Update status indicator based on message
+        if "✅" in message or "Success" in message:
+            self.status_indicator.config(text="🟢")
+            self.status_var.set("Operation successful")
+        elif "❌" in message or "Failed" in message:
+            self.status_indicator.config(text="🔴")
+            self.status_var.set("Operation failed")
+        elif "📤" in message or "Sending" in message:
+            self.status_indicator.config(text="🟡")
+            self.status_var.set("Sending email...")
+        
         self.root.update_idletasks()
     
     def clear_log(self):
-        """Clear the log text area"""
-        self.log_text.delete(1.0, tk.END)
+        """Clear the log text area with confirmation"""
+        result = messagebox.askyesno("Clear Log", "Are you sure you want to clear the activity log?")
+        if result:
+            self.log_text.delete(1.0, tk.END)
+            self.log_message("🧹 Activity log cleared")
+            self.status_indicator.config(text="🟢")
+            self.status_var.set("Log cleared")
     
     def update_config(self):
         """Update email service configuration"""

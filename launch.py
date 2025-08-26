@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Quick Launcher for Email Verification Service
-Automatically loads previous settings and starts the GUI
+Enhanced Launcher for Email Verification Service
+Beautiful splash screen with modern UI launch
 """
 
 import sys
@@ -13,7 +13,7 @@ def print_banner():
     print("📧 EMAIL VERIFICATION SERVICE LAUNCHER")
     print("=" * 50)
     print(f"🕒 Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("🔄 Loading saved settings...")
+    print("🎨 Launching with modern UI...")
 
 def check_settings():
     """Check if settings file exists"""
@@ -37,8 +37,23 @@ def check_settings():
         print("📝 No saved settings (first run)")
         return False
 
-def launch_gui():
-    """Launch the GUI application"""
+def launch_with_splash():
+    """Launch with beautiful splash screen"""
+    try:
+        print("🎨 Starting with splash screen...")
+        from splash import show_splash_and_launch
+        show_splash_and_launch()
+    except ImportError as e:
+        print(f"⚠️ Splash screen not available: {e}")
+        print("🚀 Starting GUI directly...")
+        launch_gui_direct()
+    except Exception as e:
+        print(f"❌ Error with splash screen: {e}")
+        print("🚀 Starting GUI directly...")
+        launch_gui_direct()
+
+def launch_gui_direct():
+    """Launch the GUI application directly"""
     try:
         print("🚀 Starting GUI application...")
         from gui_app import main
@@ -55,7 +70,19 @@ def main():
     print_banner()
     check_settings()
     print("=" * 50)
-    launch_gui()
+    
+    # Ask user for launch preference
+    try:
+        choice = input("\nLaunch options:\n1. Modern UI with splash screen (recommended)\n2. Direct launch\n\nChoose (1/2) or press Enter for default: ").strip()
+        
+        if choice == "2":
+            launch_gui_direct()
+        else:
+            launch_with_splash()
+            
+    except KeyboardInterrupt:
+        print("\n\n👋 Launcher interrupted by user.")
+        sys.exit(0)
 
 if __name__ == "__main__":
     try:
