@@ -1,0 +1,7 @@
+smtplib
+email
+random
+string
+datetime
+python-dotenv
+tkinter
